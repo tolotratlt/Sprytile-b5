@@ -1,46 +1,46 @@
 <p align="center">
     <img src="sprytile-logo.png?raw=true" height="100px"/>
-    <h1 align="center">Sprytile Painter</h1>
+    <h1 align="center">Sprytile B5</h1>
     <h4 align="center">
-        A <img src="https://download.blender.org/institute/logos/blender-socket.png" height="20px"/> addon for creating tile based low spec 3D scenes.
+        Compatibility fork of Sprytile for Blender 4.5 LTS and 5.x
     </h4>
   <br>
 </p>
 
-### Compatibility
+## Overview
 
-This branch targets Blender 4.5 LTS and Blender 5.1.
+Sprytile B5 is an independent, non-official compatibility fork of Sprytile focused on keeping the add-on usable on modern Blender releases.
 
-The original project history includes an older Blender 2.8 port. The current `blender-5` branch is focused on modernizing registration, GPU shader creation, and viewport drawing compatibility for current Blender releases.
+This fork currently targets:
 
-### Features
+- Blender 4.5 LTS
+- Blender 5.1
 
-* Tile building: Build your mesh directly with tiles, skip tedious UV mapping while quickly rotating and flipping tiles.
-* UV painting: Create your mesh with other Blender tools, then quickly UV map them to your tiles. Spend less time in the UV editor.
-* Pixel grid tools: Keep your mesh aligned to the grid with pixel translation, move vertices around with confidence.
+The goal of this repository is compatibility and maintenance for newer Blender versions, while preserving the core tile-based workflow that made Sprytile useful in the first place.
 
-### Demo:
+## Release
 
-![Timelapse](https://img.itch.io/aW1hZ2UvOTg5NjYvNTE3NTczLmdpZg==/250x600/mDFwN0.gif)
+The first public release of this fork is available here:
 
-### Download:
+- [Sprytile B5 1.0.0](https://github.com/tolotratlt/Sprytile-b5/releases/tag/b5-v1.0.0)
 
-Download from [releases](https://github.com/ologon/Sprytile/releases).
 
-### Getting Started:
+## Features
 
-* [Sprytile Basics Tutorial](http://docs.sprytile.xyz/quick-start/) ([video](https://youtu.be/-ezYZgMp-R0)) 
-* Blender 2.8 specific [tips](https://itch.io/post/1034106)
+- Tile building for low spec and grid-based 3D scenes
+- UV painting directly onto tiled materials
+- Pixel grid tools for precise mesh alignment and translation
 
-### Community:
+## Project Scope
 
-* Chat with the fellow users in the [Discord server](http://discord.sprytile.xyz/)
-* Showcase your work or ask for support in the [forum](https://chemikhazi.itch.io/sprytile/community)
+This repository is not the official Sprytile project.
 
-### Issue/Feature requests:
+If you are looking for the original project history and upstream source, see:
 
-Bug reports for this port can be submitted to [GitHub issues](https://github.com/ologon/Sprytile/issues)
+- [Original Sprytile repository](https://github.com/ChemiKhazi/Sprytile)
 
-### Acknowledgments:
+## Notes
 
-The bulk of Blender 2.8 porting work by was done by [Yonnji](https://github.com/Yonnji) and [ologon](https://github.com/ologon), with additional contributions by [brandy92](https://github.com/brandy92)
+- This fork has its own release cycle and versioning
+- Compatibility work is focused on modern Blender API changes, tool registration, and viewport drawing behavior
+- Some workflows may still need additional validation depending on Blender version and platform
