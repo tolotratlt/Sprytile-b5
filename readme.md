@@ -2,10 +2,16 @@
     <img src="sprytile-logo.png?raw=true" height="100px"/>
     <h1 align="center">Sprytile Painter</h1>
     <h4 align="center">
-        A <img src="https://download.blender.org/institute/logos/blender-socket.png" height="20px"/> addon for creating tile based low spec 3D scenes. (Unofficial port for blender 2.8)
+        A <img src="https://download.blender.org/institute/logos/blender-socket.png" height="20px"/> addon for creating tile based low spec 3D scenes.
     </h4>
   <br>
 </p>
+
+### Compatibility
+
+This branch targets Blender 4.5 LTS and Blender 5.1.
+
+The original project history includes an older Blender 2.8 port. The current `blender-5` branch is focused on modernizing registration, GPU shader creation, and viewport drawing compatibility for current Blender releases.
 
 ### Features
 

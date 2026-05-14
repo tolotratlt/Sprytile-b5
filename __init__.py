@@ -2,8 +2,8 @@ bl_info = {
     "name": "Sprytile Painter",
     "author": "Jeiel Aranal",
     # Final version number must be two numerals to support x.x.00
-    "version": (0, 5, 20),
-    "blender": (2, 80, 0),
+    "version": (0, 6, 0),
+    "blender": (4, 5, 0),
     "description": "A utility for creating tile based low spec scenes with paint/map editor tools",
     "location": "View3D > UI panel > Sprytile",
     "wiki_url": "http://itch.sprytile.xyz",
@@ -980,6 +980,12 @@ def get_tool_list(space_type, context_mode):
 
 
 def register_tools():
+    if hasattr(bpy.utils, "register_tool"):
+        bpy.utils.register_tool(toolbar_build, after={"builtin.select_box"}, separator=True, group=False)
+        bpy.utils.register_tool(toolbar_paint, after={"sprytile.tool_build"}, group=False)
+        bpy.utils.register_tool(toolbar_fill, after={"sprytile.tool_paint"}, group=False)
+        return
+
     tools = get_tool_list('VIEW_3D', 'EDIT_MESH')
 
     for index, tool in enumerate(tools, 1):
@@ -990,6 +996,14 @@ def register_tools():
 
 
 def unregister_tools():
+    if hasattr(bpy.utils, "unregister_tool"):
+        for tool in (toolbar_fill, toolbar_paint, toolbar_build):
+            try:
+                bpy.utils.unregister_tool(tool)
+            except Exception:
+                pass
+        return
+
     tools = get_tool_list('VIEW_3D', 'EDIT_MESH')
 
     index = tools.index(toolbar_build) - 1 # None
@@ -1017,28 +1031,28 @@ def generate_tool_keymap(keyconfig, paint_mode):
 
 
 def setup_keymap():
-    km_default = sprytile_modal.VIEW3D_OP_SprytileModalTool.default_keymaps
     km_addon = sprytile_modal.VIEW3D_OP_SprytileModalTool.addon_keymaps
     win_mgr = bpy.context.window_manager
     key_config = win_mgr.keyconfigs.addon
-    key_config_default = win_mgr.keyconfigs.default
+    if key_config is None:
+        return
 
     tools = ['MAKE_FACE', 'PAINT', 'FILL']
 
     for tool in tools:
         keymap = generate_tool_keymap(key_config, tool)
         km_addon.append(keymap)
-        keymap =  key_config_default.keymaps.new(name=sprytile_modal.VIEW3D_OP_SprytileModalTool.tool_keymaps[tool], space_type='VIEW_3D', region_type='WINDOW')
-        km_default.append(keymap)
 
 
 def teardown_keymap():
-    for keymap in sprytile_modal.VIEW3D_OP_SprytileModalTool.addon_keymaps:
-        bpy.context.window_manager.keyconfigs.addon.keymaps.remove(keymap)
+    addon_config = bpy.context.window_manager.keyconfigs.addon
+    if addon_config is not None:
+        for keymap in sprytile_modal.VIEW3D_OP_SprytileModalTool.addon_keymaps:
+            try:
+                addon_config.keymaps.remove(keymap)
+            except Exception:
+                pass
     sprytile_modal.VIEW3D_OP_SprytileModalTool.addon_keymaps.clear()
-
-    for keymap in sprytile_modal.VIEW3D_OP_SprytileModalTool.default_keymaps:
-        bpy.context.window_manager.keyconfigs.default.keymaps.remove(keymap)
     sprytile_modal.VIEW3D_OP_SprytileModalTool.default_keymaps.clear()
 
 
@@ -1095,13 +1109,17 @@ def register():
     register_tools()
     setup_keymap()
 
-    bpy.app.handlers.load_post.append(sprytile_load_handler)
+    if sprytile_load_handler not in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.append(sprytile_load_handler)
 
 
 def unregister():
     teardown_keymap()
     unregister_tools()
     PROP_OP_SprytilePropsTeardown.props_teardown()
+
+    if sprytile_load_handler in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.remove(sprytile_load_handler)
 
     for cl in classes:
         bpy.utils.unregister_class(cl)

@@ -1,5 +1,4 @@
 import bpy
-import bgl
 import blf
 import bmesh
 import math
@@ -18,6 +17,13 @@ from os import path
 import sprytile_modal
 import sprytile_preview
 import addon_updater_ops
+
+
+def set_font_size(font_id, font_size):
+    if bpy.app.version >= (4, 0, 0):
+        blf.size(font_id, font_size)
+    else:
+        blf.size(font_id, font_size, 72)
 
 
 def get_build_vertices(position, x_vector, y_vector, up_vector, right_vector):
@@ -414,8 +420,10 @@ def get_current_tool(context):
     '''
     Returns the active tool in edit mode
     '''
-    cur_tool = context.workspace.tools.from_space_view3d_mode('EDIT_MESH', create=False).idname
-    return cur_tool
+    tool = context.workspace.tools.from_space_view3d_mode('EDIT_MESH', create=False)
+    if tool is None:
+        return ""
+    return tool.idname
 
 
 def get_paint_settings(sprytile_data):
@@ -760,11 +768,11 @@ class UTIL_OP_SprytileStartTool(bpy.types.Operator):
         return self.invoke(context, None)
 
     def invoke(self, context, event):
-        if self.mode is 0:
+        if self.mode == 0:
             context.scene.sprytile_data.paint_mode = 'SET_NORMAL'
-        if self.mode is 1:
+        if self.mode == 1:
             context.scene.sprytile_data.paint_mode = 'PAINT'
-        if self.mode is 2:
+        if self.mode == 2:
             context.scene.sprytile_data.paint_mode = 'MAKE_FACE'
         bpy.ops.sprytile.modal_tool('INVOKE_REGION_WIN')
         return {'FINISHED'}
@@ -1387,7 +1395,7 @@ class UTIL_OP_SprytileGridTranslate(bpy.types.Operator):
 
         font_id = 0
         font_size = 16
-        blf.size(font_id, font_size, 72)
+        set_font_size(font_id, font_size)
 
         readout_axis = ['X', 'Y', 'Z']
         for i in range(3):
