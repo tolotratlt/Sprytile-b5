@@ -973,6 +973,62 @@ def toolbar_fill():
     )
 
 
+def build_tool_keymap_items(paint_mode):
+    keymap_items = (
+        ("sprytile.modal_tool", {"type": 'LEFTMOUSE', "value": 'PRESS'}, None),
+        ("sprytile.tile_picker", {"type": 'LEFT_ALT', "value": 'PRESS'}, None),
+        ("sprytile.rotate_left", {"type": 'Q', "value": 'PRESS'}, None),
+        ("sprytile.rotate_right", {"type": 'E', "value": 'PRESS'}, None),
+        ("sprytile.flip_x_toggle", {"type": 'Q', "value": 'PRESS', "shift": True}, None),
+        ("sprytile.flip_y_toggle", {"type": 'E', "value": 'PRESS', "shift": True}, None),
+    )
+
+    if paint_mode in {'MAKE_FACE', 'FILL'}:
+        keymap_items += (
+            ("sprytile.snap_cursor", {"type": 'S', "value": 'PRESS'}, None),
+            ("sprytile.set_normal", {"type": 'N', "value": 'PRESS'}, None),
+        )
+
+    return keymap_items
+
+
+if hasattr(bpy.types, "WorkSpaceTool"):
+    class SprytileToolBuild(bpy.types.WorkSpaceTool):
+        bl_space_type = 'VIEW_3D'
+        bl_context_mode = 'EDIT_MESH'
+        bl_idname = "sprytile.tool_build"
+        bl_label = "Sprytile Build"
+        bl_description = "Make new tiles"
+        bl_icon = os.path.join(os.path.dirname(__file__), "icons", "sprytile.build_tool")
+        bl_widget = "VIEW3D_GGT_sprytile_gui"
+        bl_keymap = build_tool_keymap_items('MAKE_FACE')
+        bl_cursor = 'KNIFE'
+
+
+    class SprytileToolPaint(bpy.types.WorkSpaceTool):
+        bl_space_type = 'VIEW_3D'
+        bl_context_mode = 'EDIT_MESH'
+        bl_idname = "sprytile.tool_paint"
+        bl_label = "Sprytile Paint"
+        bl_description = "Paint existing tiles/faces"
+        bl_icon = os.path.join(os.path.dirname(__file__), "icons", "sprytile.paint_tool")
+        bl_widget = "VIEW3D_GGT_sprytile_gui"
+        bl_keymap = build_tool_keymap_items('PAINT')
+        bl_cursor = 'PAINT_BRUSH'
+
+
+    class SprytileToolFill(bpy.types.WorkSpaceTool):
+        bl_space_type = 'VIEW_3D'
+        bl_context_mode = 'EDIT_MESH'
+        bl_idname = "sprytile.tool_fill"
+        bl_label = "Sprytile Fill"
+        bl_description = "Fill existing tiles/faces"
+        bl_icon = os.path.join(os.path.dirname(__file__), "icons", "sprytile.fill_tool")
+        bl_widget = "VIEW3D_GGT_sprytile_gui"
+        bl_keymap = build_tool_keymap_items('FILL')
+        bl_cursor = 'SCROLL_XY'
+
+
 def get_tool_list(space_type, context_mode):
     from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
     cls = ToolSelectPanelHelper._tool_class_from_space_type(space_type)
@@ -981,9 +1037,9 @@ def get_tool_list(space_type, context_mode):
 
 def register_tools():
     if hasattr(bpy.utils, "register_tool"):
-        bpy.utils.register_tool(toolbar_build, after={"builtin.select_box"}, separator=True, group=False)
-        bpy.utils.register_tool(toolbar_paint, after={"sprytile.tool_build"}, group=False)
-        bpy.utils.register_tool(toolbar_fill, after={"sprytile.tool_paint"}, group=False)
+        bpy.utils.register_tool(SprytileToolBuild, after={"builtin.select_box"}, separator=True, group=False)
+        bpy.utils.register_tool(SprytileToolPaint, after={"sprytile.tool_build"}, group=False)
+        bpy.utils.register_tool(SprytileToolFill, after={"sprytile.tool_paint"}, group=False)
         return
 
     tools = get_tool_list('VIEW_3D', 'EDIT_MESH')
@@ -997,7 +1053,7 @@ def register_tools():
 
 def unregister_tools():
     if hasattr(bpy.utils, "unregister_tool"):
-        for tool in (toolbar_fill, toolbar_paint, toolbar_build):
+        for tool in (SprytileToolFill, SprytileToolPaint, SprytileToolBuild):
             try:
                 bpy.utils.unregister_tool(tool)
             except Exception:
@@ -1031,6 +1087,9 @@ def generate_tool_keymap(keyconfig, paint_mode):
 
 
 def setup_keymap():
+    if hasattr(bpy.utils, "register_tool"):
+        return
+
     km_addon = sprytile_modal.VIEW3D_OP_SprytileModalTool.addon_keymaps
     win_mgr = bpy.context.window_manager
     key_config = win_mgr.keyconfigs.addon

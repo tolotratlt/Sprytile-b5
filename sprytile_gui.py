@@ -152,41 +152,51 @@ image_fragment_shader = '''
     }
 '''
 
-flat_shader = create_compat_shader(
-    flat_vertex_shader,
-    flat_fragment_shader,
-    (
-        (0, 'VEC2', "i_position"),
-        (1, 'VEC4', "i_color"),
-    ),
-    (
-        ('VEC4', "o_color"),
-    ),
-    (
-        (0, 'VEC4', "frag_color"),
-    ),
-)
-image_shader = create_compat_shader(
-    image_vertex_shader,
-    image_fragment_shader,
-    (
-        (0, 'VEC2', "i_position"),
-        (1, 'VEC4', "i_color"),
-        (2, 'VEC2', "i_uv"),
-    ),
-    (
-        ('VEC2', "o_uv"),
-        ('VEC4', "o_color"),
-    ),
-    (
-        (0, 'VEC4', "frag_color"),
-    ),
-    sampler_names=("u_image",),
-    push_constants=(
-        ('MAT4', "u_modelViewProjectionMatrix"),
-        ('FLOAT', "u_correct"),
-    ),
-)
+flat_shader = None
+image_shader = None
+
+
+def ensure_shaders():
+    global flat_shader, image_shader
+
+    if flat_shader is None:
+        flat_shader = create_compat_shader(
+            flat_vertex_shader,
+            flat_fragment_shader,
+            (
+                (0, 'VEC2', "i_position"),
+                (1, 'VEC4', "i_color"),
+            ),
+            (
+                ('VEC4', "o_color"),
+            ),
+            (
+                (0, 'VEC4', "frag_color"),
+            ),
+        )
+
+    if image_shader is None:
+        image_shader = create_compat_shader(
+            image_vertex_shader,
+            image_fragment_shader,
+            (
+                (0, 'VEC2', "i_position"),
+                (1, 'VEC4', "i_color"),
+                (2, 'VEC2', "i_uv"),
+            ),
+            (
+                ('VEC2', "o_uv"),
+                ('VEC4', "o_color"),
+            ),
+            (
+                (0, 'VEC4', "frag_color"),
+            ),
+            sampler_names=("u_image",),
+            push_constants=(
+                ('MAT4', "u_modelViewProjectionMatrix"),
+                ('FLOAT', "u_correct"),
+            ),
+        )
 
 
 
@@ -710,6 +720,7 @@ class VIEW3D_OP_SprytileGui(bpy.types.Operator):
 
     @staticmethod
     def draw_selection(mvpMat, color, sel_min, sel_max, adjust=1):
+        ensure_shaders()
         flat_shader.bind()
         
         sel_vtx = [
@@ -727,6 +738,7 @@ class VIEW3D_OP_SprytileGui(bpy.types.Operator):
 
     @staticmethod
     def draw_full_quad(pos, mvpMat, color = (1, 1, 1, 1)):
+        ensure_shaders()
         flat_shader.bind()
         
         vercol = (color,)*4
@@ -736,6 +748,7 @@ class VIEW3D_OP_SprytileGui(bpy.types.Operator):
 
     @staticmethod
     def draw_full_tex_quad(pos, mvpMat, texture, gammaCorrect = False, uvs = None, color = (1, 1, 1, 1)):
+        ensure_shaders()
         image_shader.bind()
 
         vercol = (color,)*4
@@ -750,6 +763,7 @@ class VIEW3D_OP_SprytileGui(bpy.types.Operator):
     @staticmethod
     def draw_offscreen(context):
         """Draw the GUI into the offscreen texture"""
+        ensure_shaders()
         offscreen = VIEW3D_OP_SprytileGui.offscreen
         target_img = VIEW3D_OP_SprytileGui.texture_grid
         tex_size = VIEW3D_OP_SprytileGui.tex_size
@@ -813,6 +827,7 @@ class VIEW3D_OP_SprytileGui(bpy.types.Operator):
             cursor_pos = VIEW3D_OP_SprytileGui.cursor_grid_pos
             # In pixel grid, draw cross hair
             if is_pixel_grid and VIEW3D_OP_SprytileGui.is_moving is False:
+                ensure_shaders()
                 flat_shader.bind()
                 flat_shader.uniform_float("u_modelViewProjectionMatrix", mvp_mat)
                 vtx_pos = ((0, int(cursor_pos.y + 1)), (tex_size[0], int(cursor_pos.y + 1)))
@@ -858,6 +873,7 @@ class VIEW3D_OP_SprytileGui(bpy.types.Operator):
 
     @staticmethod
     def draw_work_plane(mvp_mat, grid_size, sprytile_data, cursor_loc, region, rv3d, middle_btn):
+        ensure_shaders()
         display_grid = (grid_size[0], grid_size[1])
         # For single pixel grids, use world pixel density
         if grid_size[0] == 1 or grid_size[1] == 1:
@@ -1047,6 +1063,7 @@ class VIEW3D_OP_SprytileGui(bpy.types.Operator):
 
         if not is_quads:
             # Draw polygon
+            ensure_shaders()
             image_shader.bind()
 
             vercol = (color,)*len(uvs)
